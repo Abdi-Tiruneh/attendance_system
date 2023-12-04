@@ -1,0 +1,35 @@
+#name of the app
+spring:
+  application:
+    name: ELECTION SYSTEM
+
+  #db configuration
+#  datasource:
+#    url: jdbc:postgresql://localhost:5432/bug_tracker
+#    username: postgres
+#    password: 1313
+  datasource:
+    url: jdbc:postgresql://dpg-clepur08ffis73crjhmg-a.oregon-postgres.render.com/dbname_nwtn
+    username: dbname_nwtn_user
+    password: 2oQAQjAUezbD4YjNUythIFTI5etTB7jR
+  # Hibernate orm configuration
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update  #(create, create-drop, validate, update)
+    show-sql: true
+
+server:
+  port: 8123
+
+#conditional property for seeding the database
+# NOTE: Set it to true only if you are starting this app for the first time.
+database:
+  seed: false
+
+# Secret key for jwt
+JWT_SECRET_KEY:
+  AB(G+KbPeShVkYp3s6v9y$B&E)H@McQf #only for test. change it.
