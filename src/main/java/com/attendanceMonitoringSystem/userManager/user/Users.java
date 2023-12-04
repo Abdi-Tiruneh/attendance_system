@@ -20,8 +20,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 @Entity
-@Table(name = "ES_users")
-@SQLDelete(sql = "UPDATE ES_users SET deleted = true WHERE id=?")
+@Table(name = "AM_users")
+@SQLDelete(sql = "UPDATE AM_users SET deleted = true WHERE id=?")
 @Where(clause = "deleted=false")
 @Builder
 @Data

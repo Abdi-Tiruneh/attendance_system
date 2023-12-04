@@ -9,7 +9,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ES_roles")
+@Table(name = "AM_roles")
 @Data
 @NoArgsConstructor
 public class Role {
