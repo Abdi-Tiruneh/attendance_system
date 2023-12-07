@@ -54,8 +54,7 @@ public class TeamService {
         // Only managers or admin users can enroll users
         validateManagerOrAdmin(managerOrAdmin);
 
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Team not found"));
+        Team team = getTeam(teamId);
 
         // Retrieve users from the database using user IDs
         List<Users> usersToEnroll = userRepository.findAllById(userIds);
@@ -83,8 +82,7 @@ public class TeamService {
         // Only managers or admin users can remove users
         validateManagerOrAdmin(managerOrAdmin);
 
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Team not found"));
+        Team team = getTeam(teamId);
 
         // Retrieve users from the database using user IDs
         List<Users> usersToRemove = userRepository.findAllById(userIds);
@@ -111,8 +109,7 @@ public class TeamService {
         // Only admin users can update teams
         validateAdminUser(loggedInUser.getUser());
 
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Team not found"));
+        Team team = getTeam(teamId);
 
         // Check if the managerId is provided and retrieve the user
         if (teamReq.getManagerId() != null) {
@@ -137,8 +134,7 @@ public class TeamService {
 
 
     public Set<UserResponse> getAllMembers(Long teamId) {
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Team not found"));
+        Team team = getTeam(teamId);
 
         // Retrieve users from the database using user IDs
         List<Users> users = userRepository.findAllById(team.getEnrolledUsers());
@@ -153,6 +149,12 @@ public class TeamService {
         return teams.stream()
                 .map(team -> new TeamResponse(team.getId(), team.getName(), team.getManager().getFullName(), team.getDescription()))
                 .toList();
+    }
+
+
+    public Team getTeam(Long teamId) {
+        return teamRepository.findById(teamId)
+                .orElseThrow(() -> new EntityNotFoundException("Team not found"));
     }
 
 

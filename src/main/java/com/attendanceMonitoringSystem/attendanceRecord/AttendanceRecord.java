@@ -1,7 +1,6 @@
 package com.attendanceMonitoringSystem.attendanceRecord;
 
-import com.attendanceMonitoringSystem.team.Team;
-import com.attendanceMonitoringSystem.userManager.user.Users;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,15 +20,18 @@ public class AttendanceRecord {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    private Users user;
+    private Long userId;
+
+    private Long teamId;
 
     private LocalDateTime date;
 
     @Enumerated(EnumType.STRING)
     private AttendanceStatus status;
 
-    @ManyToOne
-    private Team team;
+    private boolean approved;
 
+    @Column(name = "deleted")
+    @JsonIgnore
+    private boolean deleted;
 }

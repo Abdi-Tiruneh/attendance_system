@@ -39,13 +39,14 @@ public class ApplicationExceptionHandler {
         return ResponseEntity.badRequest().body(errorMap);
     }
 
-    @ExceptionHandler({BadRequestException.class,
+    @ExceptionHandler({
             MultipartException.class,
             HttpMessageNotReadableException.class,
             HttpRequestMethodNotSupportedException.class,
             MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class,
             IllegalArgumentException.class,
-            IllegalStateException.class})
+            IllegalStateException.class,
+            BadRequestException.class})
     public ResponseEntity<ExceptionResponse> handleBadRequestException(Exception ex, HttpServletRequest request) {
         return buildResponse(ex.getMessage(), request, HttpStatus.BAD_REQUEST);
     }

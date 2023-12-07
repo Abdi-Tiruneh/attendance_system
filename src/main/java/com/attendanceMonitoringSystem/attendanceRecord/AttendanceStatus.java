@@ -3,8 +3,7 @@ package com.attendanceMonitoringSystem.attendanceRecord;
 public enum AttendanceStatus {
     PRESENT("Present"),
     ABSENT("Absent"),
-    LATE("Late");
-
+    TO_BE_FILLED("To Be Filled");
     private final String status;
 
     AttendanceStatus(String status) {
