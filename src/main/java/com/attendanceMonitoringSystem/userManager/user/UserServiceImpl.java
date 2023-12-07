@@ -1,37 +1,37 @@
 package com.attendanceMonitoringSystem.userManager.user;
 
 import com.attendanceMonitoringSystem.exceptions.customExceptions.ResourceAlreadyExistsException;
-import com.attendanceMonitoringSystem.exceptions.customExceptions.ResourceNotFoundException;
+import com.attendanceMonitoringSystem.team.Team;
+import com.attendanceMonitoringSystem.team.TeamRepository;
+import com.attendanceMonitoringSystem.team.dto.TeamResponse;
 import com.attendanceMonitoringSystem.userManager.role.Role;
 import com.attendanceMonitoringSystem.userManager.role.RoleService;
 import com.attendanceMonitoringSystem.userManager.user.dto.UserRegistrationReq;
 import com.attendanceMonitoringSystem.userManager.user.dto.UserResponse;
 import com.attendanceMonitoringSystem.userManager.user.dto.UserUpdateReq;
 import com.attendanceMonitoringSystem.utils.CurrentlyLoggedInUser;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
-import org.springframework.cache.annotation.CacheConfig;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @AllArgsConstructor
-@CacheConfig(cacheNames = "user")
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final CurrentlyLoggedInUser inUser;
     private final PasswordEncoder passwordEncoder;
+    private final TeamRepository teamRepository;
 
     @Override
     @Transactional
-    @CacheEvict(allEntries = true)
     public UserResponse register(UserRegistrationReq userReq, String roleName) {
         if (userRepository.findByUsername(userReq.getUsername()).isPresent())
             throw new ResourceAlreadyExistsException("Username is already taken");
@@ -51,7 +51,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    @CacheEvict(allEntries = true)
     public UserResponse editUser(UserUpdateReq updateReq) {
         Users user = inUser.getUser();
 
@@ -74,13 +73,13 @@ public class UserServiceImpl implements UserService {
     @Override
     public Users getUserByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
+                .orElseThrow(() -> new EntityNotFoundException("User not found."));
     }
 
     @Override
     public Users getUserById(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
+                .orElseThrow(() -> new EntityNotFoundException("User not found."));
     }
 
     @Override
@@ -96,11 +95,36 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Cacheable
-    public List<UserResponse> getAllUsers() {
-        List<Users> users = userRepository.findAll(Sort.by(Sort.Order.asc("id")));
-        return users.stream().
-                map(UserResponse::toResponse).
-                toList();
+    public List<UserResponse> getAllUsers(String role) {
+        List<Users> users;
+
+        if (!isValidRole(role))
+            users = userRepository.findAll(Sort.by(Sort.Order.asc("id")));
+        else
+            users = userRepository.findByRoleRoleName(role.toUpperCase(), Sort.by(Sort.Order.asc("id")));
+
+        return users.stream()
+                .map(UserResponse::toResponse)
+                .toList();
     }
+
+    @Override
+    public List<TeamResponse> getUserTeams(Long userId) {
+        Users user = getUserById(userId);
+        if (user.getEnrolledTeams() == null)
+            return new ArrayList<>();
+
+        List<Team> teams = teamRepository.findAllById(user.getEnrolledTeams());
+        return teams.stream()
+                .map(team -> new TeamResponse(team.getId(), team.getName(), team.getManager().getFullName(), team.getDescription()))
+                .toList();
+    }
+
+    private boolean isValidRole(String role) {
+        return role != null && !role.isEmpty() &&
+                (role.equalsIgnoreCase("ADMIN") ||
+                        role.equalsIgnoreCase("MANAGER") ||
+                        role.equalsIgnoreCase("USER"));
+    }
+
 }

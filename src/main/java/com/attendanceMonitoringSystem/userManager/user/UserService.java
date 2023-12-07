@@ -1,5 +1,6 @@
 package com.attendanceMonitoringSystem.userManager.user;
 
+import com.attendanceMonitoringSystem.team.dto.TeamResponse;
 import com.attendanceMonitoringSystem.userManager.user.dto.UserRegistrationReq;
 import com.attendanceMonitoringSystem.userManager.user.dto.UserResponse;
 import com.attendanceMonitoringSystem.userManager.user.dto.UserUpdateReq;
@@ -11,7 +12,9 @@ public interface UserService {
 
     UserResponse me();
 
-    List<UserResponse> getAllUsers();
+    List<UserResponse> getAllUsers(String role);
+
+    List<TeamResponse> getUserTeams(Long userId);
 
     UserResponse editUser(UserUpdateReq updateReq);
 

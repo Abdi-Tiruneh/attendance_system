@@ -1,8 +1,8 @@
 package com.attendanceMonitoringSystem.security.service;
 
-import com.attendanceMonitoringSystem.exceptions.customExceptions.ResourceNotFoundException;
 import com.attendanceMonitoringSystem.userManager.user.UserRepository;
 import com.attendanceMonitoringSystem.userManager.user.Users;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -44,7 +44,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     public Users getByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(
-                () -> new ResourceNotFoundException("User not found")
+                () -> new EntityNotFoundException("User not found")
         );
     }
 }

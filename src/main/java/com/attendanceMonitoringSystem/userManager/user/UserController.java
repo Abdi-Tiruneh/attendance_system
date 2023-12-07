@@ -1,6 +1,7 @@
 package com.attendanceMonitoringSystem.userManager.user;
 
 import com.attendanceMonitoringSystem.exceptions.customExceptions.ForbiddenException;
+import com.attendanceMonitoringSystem.team.dto.TeamResponse;
 import com.attendanceMonitoringSystem.userManager.user.dto.UserRegistrationReq;
 import com.attendanceMonitoringSystem.userManager.user.dto.UserResponse;
 import com.attendanceMonitoringSystem.userManager.user.dto.UserUpdateReq;
@@ -32,8 +33,13 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<List<UserResponse>> getAllUsers(@RequestParam(required = false) String role) {
+        return ResponseEntity.ok(userService.getAllUsers(role));
+    }
+
+    @GetMapping("/{userId}/teams")
+    public ResponseEntity<List<TeamResponse>> getUserTeams(@PathVariable Long userId) {
+        return ResponseEntity.ok(userService.getUserTeams(userId));
     }
 
     @PostMapping

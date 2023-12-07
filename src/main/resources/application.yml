@@ -12,8 +12,8 @@ spring:
     url: jdbc:postgresql://dpg-clepur08ffis73crjhmg-a.oregon-postgres.render.com/dbname_nwtn
     username: dbname_nwtn_user
     password: 2oQAQjAUezbD4YjNUythIFTI5etTB7jR
-  # Hibernate orm configuration
 
+#   Hibernate orm configuration
   jpa:
     properties:
       hibernate:

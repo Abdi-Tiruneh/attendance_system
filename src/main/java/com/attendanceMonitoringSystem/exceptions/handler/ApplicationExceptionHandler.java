@@ -1,11 +1,13 @@
 package com.attendanceMonitoringSystem.exceptions.handler;
 
 import com.attendanceMonitoringSystem.exceptions.customExceptions.*;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -53,8 +55,8 @@ public class ApplicationExceptionHandler {
         return buildResponse(ex.getMessage(), request, HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ExceptionResponse> handleResourceNotFoundException(ResourceNotFoundException ex, HttpServletRequest request) {
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ExceptionResponse> handleResourceNotFoundException(EntityNotFoundException ex, HttpServletRequest request) {
         return buildResponse(ex.getMessage(), request, HttpStatus.NOT_FOUND);
     }
 
@@ -63,8 +65,8 @@ public class ApplicationExceptionHandler {
         return buildResponse(ex.getMessage(), request, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<ExceptionResponse> handleForbiddenException(ForbiddenException ex, HttpServletRequest request) {
+    @ExceptionHandler({ForbiddenException.class, AccessDeniedException.class})
+    public ResponseEntity<ExceptionResponse> handleForbiddenException(Exception ex, HttpServletRequest request) {
         return buildResponse(ex.getMessage(), request, HttpStatus.FORBIDDEN);
     }
 

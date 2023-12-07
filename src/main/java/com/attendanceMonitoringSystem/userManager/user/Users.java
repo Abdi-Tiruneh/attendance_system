@@ -18,6 +18,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "AM_users")
@@ -61,6 +63,22 @@ public class Users implements UserDetails {
     @Column(name = "deleted")
     @JsonIgnore
     private boolean deleted;
+
+    private Set<Long> enrolledTeams = new HashSet<>();
+
+    public void enrollInClassTeam(Long teamId) {
+        if (this.enrolledTeams == null)
+            this.enrolledTeams = new HashSet<>();
+
+        this.enrolledTeams.add(teamId);
+    }
+
+    public void leaveClassTeam(Long teamId) {
+        if (this.enrolledTeams == null)
+            return;
+
+        this.enrolledTeams.remove(teamId);
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

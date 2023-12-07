@@ -1,6 +1,6 @@
 package com.attendanceMonitoringSystem.userManager.role;
 
-import com.attendanceMonitoringSystem.exceptions.customExceptions.ResourceNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,12 +21,12 @@ public class RoleService {
     // Retrieves a role by id.
     public Role getRoleById(Long roleId) {
         return roleRepository.findById(roleId)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Role not found."));
     }
 
     public Role getRoleByRoleName(String roleName) {
         return roleRepository.findByRoleNameIgnoreCase(roleName)
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found."));
+                .orElseThrow(() -> new EntityNotFoundException("Role not found."));
     }
 
 }
