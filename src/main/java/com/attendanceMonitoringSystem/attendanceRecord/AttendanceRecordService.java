@@ -43,9 +43,8 @@ public class AttendanceRecordService {
 
         Team team = teamService.getTeam(attendanceRecordReq.getTeamId());
 
-        LocalDate currentDate = LocalDate.now();
-
         for (Long userId : team.getEnrolledUsers()) {
+            LocalDate currentDate = LocalDate.now();
             for (int i = 0; i < attendanceRecordReq.getAttendanceDuration(); i++) {
                 LocalDateTime currentDateTime = currentDate.atStartOfDay();
 
@@ -94,28 +93,6 @@ public class AttendanceRecordService {
 
         return attendanceRecordRepository.save(attendanceRecord);
     }
-
-//    @Transactional
-//    public AttendanceRecord AttendanceRecords(Long id) {
-//        Users user = loggedInUser.getUser();
-//        Long userId = user.getId();
-//        LocalDateTime currentDate = LocalDate.now().atStartOfDay();
-//
-//        AttendanceRecord attendanceRecord = attendanceRecordRepository.findByIdAndUserId(id, userId)
-//                .orElseThrow(() -> new EntityNotFoundException("Attendance record not found"));
-//
-//        if (!attendanceRecord.getDate().equals(currentDate))
-//            throw new BadRequestException("Attendance can only be filled for the current date.");
-//
-//        if (attendanceRecord.getStatus() == AttendanceStatus.PRESENT)
-//            throw new BadRequestException("Attendance has already been marked as PRESENT for today.");
-//
-//        attendanceRecord.setStatus(AttendanceStatus.PRESENT);
-//
-//        return attendanceRecordRepository.save(attendanceRecord);
-//    }
-
-
 
     @Transactional
     public void enrollUsers(Long teamId, Set<Long> userIds) {
