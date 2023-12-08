@@ -18,6 +18,8 @@ public interface UserService {
 
     UserResponse editUser(UserUpdateReq updateReq);
 
+    UserResponse editUser(Long userId, UserUpdateReq updateReq);
+
     Users getUserByUsername(String email);
 
     Users getUserById(Long userId);

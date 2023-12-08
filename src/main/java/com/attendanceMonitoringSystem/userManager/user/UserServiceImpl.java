@@ -13,6 +13,7 @@ import com.attendanceMonitoringSystem.utils.CurrentlyLoggedInUser;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,11 +50,24 @@ public class UserServiceImpl implements UserService {
         return UserResponse.toResponse(user);
     }
 
+    //users edit their account
     @Override
-    @Transactional
     public UserResponse editUser(UserUpdateReq updateReq) {
         Users user = inUser.getUser();
+        return editUser(updateReq, user);
+    }
 
+
+    //admin for other users
+    @Override
+    public UserResponse editUser(Long userId, UserUpdateReq updateReq) {
+        validateAdminUser(inUser.getUser());
+        Users user = getUserById(userId);
+        return editUser(updateReq, user);
+    }
+
+    @Transactional
+    private UserResponse editUser(UserUpdateReq updateReq, Users user) {
         if (updateReq.getFullName() != null)
             user.setFullName(updateReq.getFullName());
 
@@ -69,6 +83,7 @@ public class UserServiceImpl implements UserService {
         user = userRepository.save(user);
         return UserResponse.toResponse(user);
     }
+
 
     @Override
     public Users getUserByUsername(String username) {
@@ -126,5 +141,11 @@ public class UserServiceImpl implements UserService {
                         role.equalsIgnoreCase("MANAGER") ||
                         role.equalsIgnoreCase("USER"));
     }
+
+    private void validateAdminUser(Users admin) {
+        if (!admin.getRole().getRoleName().equals("ADMIN"))
+            throw new AccessDeniedException("Only admin users can perform this operation");
+    }
+
 
 }
