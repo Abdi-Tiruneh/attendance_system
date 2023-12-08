@@ -43,9 +43,14 @@ public class AttendanceRecordService {
 
         Team team = teamService.getTeam(attendanceRecordReq.getTeamId());
 
+        if (attendanceRecordReq.getAttendanceDuration() > 12)
+            throw new BadRequestException("Attendance Duration must be a maximum of 12 months.");
+
+        int duration = attendanceRecordReq.getAttendanceDuration() < 1 ? 7 : attendanceRecordReq.getAttendanceDuration() * 30;
+
         for (Long userId : team.getEnrolledUsers()) {
             LocalDate currentDate = LocalDate.now();
-            for (int i = 0; i < attendanceRecordReq.getAttendanceDuration(); i++) {
+            for (int i = 0; i < duration; i++) {
                 LocalDateTime currentDateTime = currentDate.atStartOfDay();
 
                 // Check if an attendance record already exists for the specified day, user, and team
