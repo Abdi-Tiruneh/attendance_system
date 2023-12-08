@@ -152,6 +152,31 @@ public class AttendanceRecordService {
         teamRepository.save(team);
     }
 
+    @Transactional
+    public void approveAttendanceRecords(Long teamId, Long userId) {
+        Users inUserUser = loggedInUser.getUser();
+
+        // Only managers can approve attendance records
+        validateManagerUser(inUserUser);
+
+        Team team = teamService.getTeam(teamId);
+
+        if (!team.getManager().getId().equals(inUserUser.getId()))
+            throw new AccessDeniedException("Only the team manager can approve attendance records.");
+
+        List<AttendanceRecord> recordsToApprove = attendanceRecordRepository
+                .findByTeamIdAndUserIdAndDateBeforeAndApprovedIsFalse(teamId, userId, LocalDate.now().atStartOfDay());
+
+        if (recordsToApprove.isEmpty())
+            throw new EntityNotFoundException("There is no record to approve");
+
+        List<AttendanceRecord> approvedRecords = recordsToApprove.stream()
+                .peek(record -> record.setApproved(true))
+                .toList();
+
+        attendanceRecordRepository.saveAll(approvedRecords);
+    }
+
     public Set<UserResponse> getAllMembers(Long teamId) {
         Team team = teamRepository.findById(teamId)
                 .orElseThrow(() -> new EntityNotFoundException("Team not found"));
@@ -174,6 +199,11 @@ public class AttendanceRecordService {
     private void validateAdminUser(Users admin) {
         if (!admin.getRole().getRoleName().equals("ADMIN"))
             throw new AccessDeniedException("Only admin users can perform this operation");
+    }
+
+    private void validateManagerUser(Users admin) {
+        if (!admin.getRole().getRoleName().equals("MANAGER"))
+            throw new AccessDeniedException("Only manager users can perform this operation");
     }
 
     private void validateManagerOrAdmin(Users managerOrAdmin) {

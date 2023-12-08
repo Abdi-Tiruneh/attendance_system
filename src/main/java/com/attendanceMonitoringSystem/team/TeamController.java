@@ -32,8 +32,8 @@ public class TeamController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TeamResponse>> getAllUsers() {
-        return ResponseEntity.ok(teamService.getAllTeams());
+    public ResponseEntity<List<TeamResponse>> getAllUsers(@RequestParam(required = false) Long managerId) {
+        return ResponseEntity.ok(teamService.getAllTeams(managerId));
     }
 
     @PostMapping

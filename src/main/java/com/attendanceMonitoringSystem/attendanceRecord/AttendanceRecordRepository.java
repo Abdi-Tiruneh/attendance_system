@@ -18,5 +18,7 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
     Set<AttendanceRecord> findByTeamIdAndUserId(Long teamId, Long userId, Sort id);
 
     List<AttendanceRecord> findByStatusAndDateBefore(AttendanceStatus attendanceStatus, LocalDateTime currentDate);
+
+    List<AttendanceRecord> findByTeamIdAndUserIdAndDateBeforeAndApprovedIsFalse(Long teamId, Long userId, LocalDateTime localDateTime);
 }
 

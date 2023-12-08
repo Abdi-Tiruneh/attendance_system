@@ -36,5 +36,10 @@ public class AttendanceRecordController {
         return ResponseEntity.ok(attendanceRecordService.fillAttendanceRecords(id));
     }
 
+    @PutMapping("/approve/team/{teamId}/user/{userId}")
+    public ResponseEntity<?> approveAttendanceRecords(@PathVariable Long teamId, @PathVariable Long userId) {
+        attendanceRecordService.approveAttendanceRecords(teamId, userId);
+        return ApiResponse.success("Approved Successfully");
+    }
 
 }

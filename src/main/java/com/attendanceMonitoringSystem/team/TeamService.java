@@ -144,13 +144,17 @@ public class TeamService {
                 .collect(Collectors.toSet());
     }
 
-    public List<TeamResponse> getAllTeams() {
-        List<Team> teams = teamRepository.findAll();
+    public List<TeamResponse> getAllTeams(Long managerId) {
+        List<Team> teams;
+        if (managerId != null)
+            teams = teamRepository.findByManagerId(managerId);
+        else
+            teams = teamRepository.findAll();
+
         return teams.stream()
                 .map(team -> new TeamResponse(team.getId(), team.getName(), team.getManager().getFullName(), team.getDescription()))
                 .toList();
     }
-
 
     public Team getTeam(Long teamId) {
         return teamRepository.findById(teamId)
