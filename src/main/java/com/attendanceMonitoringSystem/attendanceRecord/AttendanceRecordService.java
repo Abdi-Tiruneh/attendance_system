@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,10 +44,19 @@ public class AttendanceRecordService {
 
         Team team = teamService.getTeam(attendanceRecordReq.getTeamId());
 
-        if (attendanceRecordReq.getAttendanceDuration() > 12)
-            throw new BadRequestException("Attendance Duration must be a maximum of 12 months.");
+        // Check if there are no enrolled users in the team to create a time sheet for
+        if (team.getEnrolledUsers().isEmpty())
+            throw new EntityNotFoundException("There are no enrolled users in the team to create a time sheet for.");
 
-        int duration = attendanceRecordReq.getAttendanceDuration() < 1 ? 7 : attendanceRecordReq.getAttendanceDuration() * 30;
+        // Check if the specified attendance duration is greater than the allowed maximum (30 days)
+        if (attendanceRecordReq.getAttendanceDuration() > 30)
+            throw new BadRequestException("Attendance Duration must be a maximum of 1 month.");
+
+        // Set the effective attendance duration, ensuring it is at least 7 days
+        // If the requested duration is less than 7 days, use the minimum allowed duration of 7 days
+        int duration = attendanceRecordReq.getAttendanceDuration() < 7 ? 7 : attendanceRecordReq.getAttendanceDuration();
+
+        List<AttendanceRecord> attendanceRecordsToSave = new ArrayList<>();
 
         for (Long userId : team.getEnrolledUsers()) {
             LocalDate currentDate = LocalDate.now();
@@ -63,8 +73,10 @@ public class AttendanceRecordService {
                     attendanceRecord.setStatus(AttendanceStatus.TO_BE_FILLED);
                     attendanceRecord.setApproved(false);
 
-                    attendanceRecordRepository.save(attendanceRecord);
+                    attendanceRecordsToSave.add(attendanceRecord);
                 }
+
+                attendanceRecordRepository.saveAll(attendanceRecordsToSave);
 
                 currentDate = currentDate.plusDays(1);
             }
@@ -169,8 +181,13 @@ public class AttendanceRecordService {
         if (!team.getManager().getId().equals(inUserUser.getId()))
             throw new AccessDeniedException("Only the team manager can approve attendance records.");
 
+        LocalDateTime currentDate = LocalDate.now().atStartOfDay();
+
         List<AttendanceRecord> recordsToApprove = attendanceRecordRepository
-                .findByTeamIdAndUserIdAndDateBeforeAndApprovedIsFalse(teamId, userId, LocalDate.now().atStartOfDay());
+                .findByTeamIdAndUserIdAndDateBeforeOrDateAndApprovedIsFalseAndStatusNot(
+                        teamId, userId, currentDate, currentDate, AttendanceStatus.TO_BE_FILLED
+                );
+
 
         if (recordsToApprove.isEmpty())
             throw new EntityNotFoundException("There is no record to approve");
