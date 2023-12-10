@@ -1,12 +1,14 @@
 package com.attendanceMonitoringSystem.attendanceRecord;
 
 import com.attendanceMonitoringSystem.attendanceRecord.dto.AttendanceRecordReq;
+import com.attendanceMonitoringSystem.userManager.user.dto.UserResponse;
 import com.attendanceMonitoringSystem.utils.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 
 
@@ -26,9 +28,9 @@ public class AttendanceRecordController {
     }
 
 
-    @GetMapping("/team/{teamId}/user/{userId}")
-    public ResponseEntity<Set<AttendanceRecord>> getUnapprovedAttendanceRecords(@PathVariable Long teamId, @PathVariable Long userId) {
-        return ResponseEntity.ok(attendanceRecordService.getUnapprovedAttendanceRecords(teamId, userId));
+    @GetMapping("/unapproved/team/{teamId}")
+    public ResponseEntity<List<UserResponse>> getUnapprovedAttendanceRecords(@PathVariable Long teamId) {
+        return ResponseEntity.ok(attendanceRecordService.getUnapprovedAttendanceRecords(teamId));
     }
 
     @PostMapping
@@ -43,8 +45,8 @@ public class AttendanceRecordController {
     }
 
     @PutMapping("/approve/team/{teamId}")
-    public ResponseEntity<?> approveAttendanceRecords(@PathVariable Long teamId, @RequestBody Set<AttendanceRecord> recordsToApprove) {
-        attendanceRecordService.approveAttendanceRecords(teamId, recordsToApprove);
+    public ResponseEntity<?> approveAttendanceRecords(@PathVariable Long teamId, @RequestBody Set<Long> userIds) {
+        attendanceRecordService.approveAttendanceRecords(teamId, userIds);
         return ApiResponse.success("Approved Successfully");
     }
 

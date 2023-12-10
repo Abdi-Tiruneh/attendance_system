@@ -6,6 +6,7 @@ import com.attendanceMonitoringSystem.userManager.user.dto.UserResponse;
 import com.attendanceMonitoringSystem.userManager.user.dto.UserUpdateReq;
 
 import java.util.List;
+import java.util.Set;
 
 public interface UserService {
     UserResponse register(UserRegistrationReq userReq, String roleName);
@@ -23,6 +24,8 @@ public interface UserService {
     Users getUserByUsername(String email);
 
     Users getUserById(Long userId);
+
+    List<UserResponse> getUsersById(Set<Long> userIdList);
 
     void deleteUser(Long id);
 }

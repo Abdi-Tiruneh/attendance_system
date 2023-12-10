@@ -8,6 +8,7 @@ import com.attendanceMonitoringSystem.team.TeamService;
 import com.attendanceMonitoringSystem.userManager.user.UserRepository;
 import com.attendanceMonitoringSystem.userManager.user.UserService;
 import com.attendanceMonitoringSystem.userManager.user.Users;
+import com.attendanceMonitoringSystem.userManager.user.dto.UserResponse;
 import com.attendanceMonitoringSystem.utils.CurrentlyLoggedInUser;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -110,8 +111,20 @@ public class AttendanceRecordService {
         return attendanceRecordRepository.save(attendanceRecord);
     }
 
+
+    List<UserResponse> getUnapprovedAttendanceRecords(Long teamId) {
+
+        List<AttendanceRecord> attendanceRecords = attendanceRecordRepository.findByTeamIdAndApprovedIsFalseAndStatusNot(teamId, AttendanceStatus.TO_BE_FILLED);
+        // Use stream to extract unique userIds
+        Set<Long> userIds = attendanceRecords.stream()
+                .map(AttendanceRecord::getUserId)
+                .collect(Collectors.toSet());
+
+        return userService.getUsersById(userIds);
+    }
+
     @Transactional
-    public void approveAttendanceRecords(Long teamId, Set<AttendanceRecord> recordsToApprove) {
+    public void approveAttendanceRecords(Long teamId, Set<Long> userIds) {
         Users inUserUser = loggedInUser.getUser();
 
         // Only managers can approve attendance records
@@ -122,6 +135,9 @@ public class AttendanceRecordService {
         if (!team.getManager().getId().equals(inUserUser.getId()))
             throw new AccessDeniedException("Only the team manager can approve attendance records.");
 
+        List<AttendanceRecord> recordsToApprove = attendanceRecordRepository
+                .findByTeamIdAndUserIdInAndApprovedIsFalseAndStatusNot(teamId,userIds, AttendanceStatus.TO_BE_FILLED);
+
         if (recordsToApprove.isEmpty())
             throw new EntityNotFoundException("There is no record to approve");
 
@@ -130,23 +146,6 @@ public class AttendanceRecordService {
                 .toList();
 
         attendanceRecordRepository.saveAll(approvedRecords);
-    }
-
-
-    Set<AttendanceRecord> getUnapprovedAttendanceRecords(Long teamId, Long userId) {
-        Sort sort = Sort.by(Sort.Order.desc("date"));
-
-        LocalDateTime currentDate = LocalDate.now().atStartOfDay();
-
-        Set<AttendanceRecord> attendanceRecords = attendanceRecordRepository
-                .findByTeamIdAndUserIdAndDateBeforeOrDate(
-                        teamId, userId, currentDate, currentDate, sort);
-
-
-        // Remove records with status "TO_BE_FILLED"
-        return  attendanceRecords.stream()
-                .filter(record -> !AttendanceStatus.TO_BE_FILLED.equals(record.getStatus()) && !record.isApproved())
-                .collect(Collectors.toSet());
     }
 
     private void validateManagerUser(Users admin) {

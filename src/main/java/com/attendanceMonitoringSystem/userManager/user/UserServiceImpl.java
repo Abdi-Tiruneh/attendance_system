@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -95,6 +96,15 @@ public class UserServiceImpl implements UserService {
     public Users getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found."));
+    }
+
+    @Override
+    public List<UserResponse> getUsersById(Set<Long> userIdList) {
+
+        List<Users> users = userRepository.findAllById(userIdList);
+        return users.stream()
+                .map(UserResponse::toResponse)
+                .toList();
     }
 
     @Override
