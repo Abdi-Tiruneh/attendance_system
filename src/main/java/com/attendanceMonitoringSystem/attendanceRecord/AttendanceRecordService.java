@@ -8,7 +8,6 @@ import com.attendanceMonitoringSystem.team.TeamService;
 import com.attendanceMonitoringSystem.userManager.user.UserRepository;
 import com.attendanceMonitoringSystem.userManager.user.UserService;
 import com.attendanceMonitoringSystem.userManager.user.Users;
-import com.attendanceMonitoringSystem.userManager.user.dto.UserResponse;
 import com.attendanceMonitoringSystem.utils.CurrentlyLoggedInUser;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -112,65 +111,7 @@ public class AttendanceRecordService {
     }
 
     @Transactional
-    public void enrollUsers(Long teamId, Set<Long> userIds) {
-        Users managerOrAdmin = loggedInUser.getUser();
-
-        // Only managers or admin users can enroll users
-        validateManagerOrAdmin(managerOrAdmin);
-
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Team not found"));
-
-        // Retrieve users from the database using user IDs
-        List<Users> usersToEnroll = userRepository.findAllById(userIds);
-
-        // Update each user and enroll in the team
-        for (Users user : usersToEnroll) {
-            user.enrollInClassTeam(team.getId());
-            userRepository.save(user);
-        }
-        // Extract user IDs from the list of Users
-        userIds = usersToEnroll.stream()
-                .map(Users::getId)
-                .collect(Collectors.toSet());
-
-        team.getEnrolledUsers().addAll(userIds);
-
-        teamRepository.save(team);
-    }
-
-
-    @Transactional
-    public void removeUsersFromTeam(Long teamId, Set<Long> userIds) {
-        Users managerOrAdmin = loggedInUser.getUser();
-
-        // Only managers or admin users can remove users
-        validateManagerOrAdmin(managerOrAdmin);
-
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Team not found"));
-
-        // Retrieve users from the database using user IDs
-        List<Users> usersToRemove = userRepository.findAllById(userIds);
-
-        // Update each user and remove from the team
-        for (Users user : usersToRemove) {
-            user.leaveClassTeam(team.getId());
-            userRepository.save(user);
-        }
-
-        // Extract user IDs from the list of Users
-        userIds = usersToRemove.stream()
-                .map(Users::getId)
-                .collect(Collectors.toSet());
-
-        // Remove users from the team
-        team.getEnrolledUsers().removeAll(userIds);
-        teamRepository.save(team);
-    }
-
-    @Transactional
-    public void approveAttendanceRecords(Long teamId, Long userId) {
+    public void approveAttendanceRecords(Long teamId, Set<AttendanceRecord> recordsToApprove) {
         Users inUserUser = loggedInUser.getUser();
 
         // Only managers can approve attendance records
@@ -180,14 +121,6 @@ public class AttendanceRecordService {
 
         if (!team.getManager().getId().equals(inUserUser.getId()))
             throw new AccessDeniedException("Only the team manager can approve attendance records.");
-
-        LocalDateTime currentDate = LocalDate.now().atStartOfDay();
-
-        List<AttendanceRecord> recordsToApprove = attendanceRecordRepository
-                .findByTeamIdAndUserIdAndDateBeforeOrDateAndApprovedIsFalseAndStatusNot(
-                        teamId, userId, currentDate, currentDate, AttendanceStatus.TO_BE_FILLED
-                );
-
 
         if (recordsToApprove.isEmpty())
             throw new EntityNotFoundException("There is no record to approve");
@@ -199,28 +132,21 @@ public class AttendanceRecordService {
         attendanceRecordRepository.saveAll(approvedRecords);
     }
 
-    public Set<UserResponse> getAllMembers(Long teamId) {
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new EntityNotFoundException("Team not found"));
 
-        // Retrieve users from the database using user IDs
-        List<Users> users = userRepository.findAllById(team.getEnrolledUsers());
-        return users
-                .stream()
-                .map(UserResponse::toResponse)
+    Set<AttendanceRecord> getUnapprovedAttendanceRecords(Long teamId, Long userId) {
+        Sort sort = Sort.by(Sort.Order.desc("date"));
+
+        LocalDateTime currentDate = LocalDate.now().atStartOfDay();
+
+        Set<AttendanceRecord> attendanceRecords = attendanceRecordRepository
+                .findByTeamIdAndUserIdAndDateBeforeOrDate(
+                        teamId, userId, currentDate, currentDate, sort);
+
+
+        // Remove records with status "TO_BE_FILLED"
+        return  attendanceRecords.stream()
+                .filter(record -> !AttendanceStatus.TO_BE_FILLED.equals(record.getStatus()) && !record.isApproved())
                 .collect(Collectors.toSet());
-    }
-
-
-    public void deleteTeam(Long id) {
-        Team team = teamRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Team not found"));
-        teamRepository.delete(team);
-    }
-
-    private void validateAdminUser(Users admin) {
-        if (!admin.getRole().getRoleName().equals("ADMIN"))
-            throw new AccessDeniedException("Only admin users can perform this operation");
     }
 
     private void validateManagerUser(Users admin) {

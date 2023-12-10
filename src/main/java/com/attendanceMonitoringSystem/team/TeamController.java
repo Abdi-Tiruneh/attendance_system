@@ -32,7 +32,7 @@ public class TeamController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TeamResponse>> getAllUsers(@RequestParam(required = false) Long managerId) {
+    public ResponseEntity<List<TeamResponse>> getAllTeams(@RequestParam(required = false) Long managerId) {
         return ResponseEntity.ok(teamService.getAllTeams(managerId));
     }
 

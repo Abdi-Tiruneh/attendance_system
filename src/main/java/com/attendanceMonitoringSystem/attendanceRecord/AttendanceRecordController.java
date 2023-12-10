@@ -21,8 +21,14 @@ public class AttendanceRecordController {
     }
 
     @GetMapping("/teams/{teamId}")
-    public ResponseEntity<Set<AttendanceRecord>> getMe(@PathVariable Long teamId) {
+    public ResponseEntity<Set<AttendanceRecord>> getAttendanceRecords(@PathVariable Long teamId) {
         return ResponseEntity.ok(attendanceRecordService.getAttendanceRecords(teamId));
+    }
+
+
+    @GetMapping("/team/{teamId}/user/{userId}")
+    public ResponseEntity<Set<AttendanceRecord>> getUnapprovedAttendanceRecords(@PathVariable Long teamId, @PathVariable Long userId) {
+        return ResponseEntity.ok(attendanceRecordService.getUnapprovedAttendanceRecords(teamId, userId));
     }
 
     @PostMapping
@@ -36,9 +42,9 @@ public class AttendanceRecordController {
         return ResponseEntity.ok(attendanceRecordService.fillAttendanceRecords(id));
     }
 
-    @PutMapping("/approve/team/{teamId}/user/{userId}")
-    public ResponseEntity<?> approveAttendanceRecords(@PathVariable Long teamId, @PathVariable Long userId) {
-        attendanceRecordService.approveAttendanceRecords(teamId, userId);
+    @PutMapping("/approve/team/{teamId}")
+    public ResponseEntity<?> approveAttendanceRecords(@PathVariable Long teamId, @RequestBody Set<AttendanceRecord> recordsToApprove) {
+        attendanceRecordService.approveAttendanceRecords(teamId, recordsToApprove);
         return ApiResponse.success("Approved Successfully");
     }
 
