@@ -23,7 +23,7 @@ spring:
     show-sql: true
 
 server:
-  port: 8123
+  port: 9191
 
 #conditional property for seeding the database
 # NOTE: Set it to true only if you are starting this app for the first time.
